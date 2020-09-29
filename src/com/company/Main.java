@@ -136,6 +136,28 @@ public class Main {
         return false;
     }
 
+    //Fastest three sum
+    public static boolean fastestThreeSum(int[] array, int arrayLength) {
+        Arrays.sort(array);
+        int low, high;
+        for(int x = 0; x < arrayLength-2; x++){
+            low = x+1;
+            high = arrayLength-1;
+            while(low < high){
+                //If elements sum to 0 and are unique
+                if(array[x] + array[low] + array[high] == 0 && array[x] != array[low] && array[low] != array[high]){
+                    return true;
+                //If sum is less than 0, increment low
+                } else if (array[x] + array[low] + array[high] < 0){
+                    low++;
+                } else {
+                    high--;
+                }
+            }
+        }
+        return false;
+    }
+
     //Function to retrieve CPU time
     public static long getCpuTime() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
@@ -145,14 +167,15 @@ public class Main {
 
     public static boolean verificationTests() {
         int[] testArray;
-        boolean bruteResult, myResult, fasterResult;
+        boolean bruteResult, myResult, fasterResult, fastestResult;
         for(int N = 4; N < 10000; N=N*2 ){
             System.out.printf("Testing for array of length %d\n", N);
             testArray = generateArray(N, -(N*2), N*2);
                 bruteResult = bruteThreeSum(testArray, N);
                 myResult = myThreeSum(testArray, N);
                 fasterResult = fasterThreeSum(testArray, N);
-                if (bruteResult != myResult || myResult != fasterResult){
+                fastestResult = fastestThreeSum(testArray, N);
+                if (bruteResult != myResult || bruteResult != fasterResult || bruteResult != fastestResult){
                     System.out.printf("Three sum results don't match for array of size %d\n ", N);
                     return false;
                 }
@@ -179,6 +202,7 @@ public class Main {
         long brutePrevTime = 1;
         long myPrevTime = 1;
         long fasterPrevTime = 1;
+        long fastestPrevTime = 1;
 
         System.out.printf("%31s %47s %47s\n", "Brute 3sum", "Faster 3sum", "Fastest 3sum");
         System.out.printf("%15s %15s %15s %15s %15s %15s %15s %15s %15s %15s\n",
@@ -217,6 +241,19 @@ public class Main {
 
             testArray = generateArray(N, -(N * 2), N * 2);
             beforeTime = getCpuTime();
+            fastestThreeSum(testArray, N);
+            afterTime = getCpuTime();
+            totalTime = afterTime - beforeTime;
+            System.out.printf("%16d", totalTime);
+            if(N!= 4){
+                System.out.printf("%15.3f %15d ", (float) totalTime/fastestPrevTime, (int)(Math.pow(N, 2)/(Math.pow((N/2), 2))));
+            } else {
+                System.out.printf("%15s %15s ", "na", "na");
+            }
+            fastestPrevTime = totalTime;
+
+            testArray = generateArray(N, -(N * 2), N * 2);
+            beforeTime = getCpuTime();
             myThreeSum(testArray, N);
             afterTime = getCpuTime();
             totalTime = afterTime - beforeTime;
@@ -235,7 +272,7 @@ public class Main {
     public static void main(String[] args) {
         // write your code here
         if(verificationTests()){
-            System.out.printf("Tests passed!");
+            System.out.printf("Tests passed! \n");
         }
         runTimeTests();
     }
