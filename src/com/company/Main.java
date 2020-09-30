@@ -16,18 +16,100 @@ public class Main {
         return array;
     }
 
+
+    //Recursive merge sort function
+    public static int[] mergeSort(int[] arrayToSort, int low, int high) {
+        //Calculating "mid" value to split array
+        int mid = (int) Math.ceil((high - low) / 2) + low;
+        int lowLength = 0;
+        int highLength = 0;
+        int totalLength = 0;
+        int[] sortedArray = new int[1];
+        int duplicate;
+        //If there's only 2 elements in the array
+        if (high - low == 2) {
+            sortedArray = new int[2];
+            //Put them in the appropriate order
+            if (arrayToSort[low] > arrayToSort[low+1]) {
+                sortedArray[0] = arrayToSort[high - 1];
+                sortedArray[1] = arrayToSort[low];
+            } else {
+                sortedArray[0] = arrayToSort[low];
+                sortedArray[1] = arrayToSort[high - 1];
+            }
+            //If there's only one element, simply return it
+        } else if (high - low == 1) {
+            sortedArray[0] = arrayToSort[low];
+            //If there's more than two elements
+        } else if (high - low > 2) {
+            //Recursively sort each half
+            int[] lowArray = mergeSort(arrayToSort, low, mid);
+            int[] highArray = mergeSort(arrayToSort, mid, high);
+            int lowIndex = 0;
+            int highIndex = 0;
+            lowLength = lowArray.length;
+            highLength = highArray.length;
+            totalLength = lowLength + highLength;
+            sortedArray = new int[totalLength];
+            //And then merge
+            for (int x = 0; x < totalLength; x++) {
+                //If low array has been looped through up to mid
+                if (lowIndex >= lowLength && highIndex <  highLength) {
+                    //Then loop through high array, adding elements to final list
+                    sortedArray[x] = highArray[highIndex];
+                    highIndex++;
+                    //If high array has been looped through up to high
+                } else if (highIndex >= highLength && lowIndex < lowLength) {
+                    //Then loop through low array, adding elements to final list
+                    sortedArray[x] = lowArray[lowIndex];
+                    lowIndex++;
+                    //Otherwise, if lowArray value is less than highArray value
+                    //place low array value in sorted array
+                } else if (lowArray[lowIndex] < highArray[highIndex]) {
+                    sortedArray[x] = lowArray[lowIndex];
+                    lowIndex++;
+                    //Or place high value in sorted array
+                } else if(lowArray[lowIndex] == highArray[highIndex]) {
+                    sortedArray[x] = lowArray[lowIndex];
+                    duplicate = lowArray[lowIndex];
+                    lowIndex++;
+                    while (lowIndex < lowLength && lowArray[lowIndex] == duplicate){
+                        lowIndex++;
+                        totalLength--;
+                    }
+                    while (highIndex < highLength && highArray[highIndex] == duplicate) {
+                        highIndex++;
+                        totalLength--;
+                    }
+                } else {
+                    sortedArray[x] = highArray[highIndex];
+                    highIndex++;
+                }
+            }
+        }
+        if(totalLength != lowLength + highLength){
+            int[] outputArray = new int[totalLength];
+            for(int x = 0; x < totalLength; x++){
+                outputArray[x] = sortedArray[x];
+            }
+            return outputArray;
+        }
+        return sortedArray;
+    }
+
     public static boolean myThreeSum(int[] array, int arrayLength) {
-        Arrays.sort(array);
+        int[] outputArray = mergeSort(array, 0, arrayLength);
+        int modifiedLength = outputArray.length;
         int midIndex = 0;
         int posLow, posHigh, negLow, negHigh, highChecked, lowChecked;
-        for (int x = 0; x < arrayLength; x++) {
-            if (array[x] > 0) {
+        for (int x = 0; x < modifiedLength; x++) {
+            if (outputArray[x] > 0) {
                 midIndex = x;
                 break;
             }
         }
 
-        highChecked = arrayLength - 1;
+        highChecked = modifiedLength - 1;
         //Looking for a one negative number and two positive solution
         //Taking lowest negative first
         for (int neg = 0; neg < midIndex; neg++) {
@@ -35,7 +117,7 @@ public class Main {
             posLow = midIndex;
             posHigh = highChecked;
             //Looping down from highest element to find highest element smaller than current negative
-            while(array[posHigh] + array[neg] > 0){
+            while(posHigh > midIndex && outputArray[posHigh] + outputArray[neg] > 0){
                 posHigh--;
             }
 
@@ -46,10 +128,10 @@ public class Main {
             //Finding matching elements by looping down and up through positive elements
             while(posHigh > posLow) {
                 //If total equals 0, return
-                if(array[posHigh] + array[posLow] + array[neg] == 0 && array[posHigh] != array[posLow]){
+                if(outputArray[posHigh] + outputArray[posLow] + outputArray[neg] == 0){
                     return true;
                 //If total is greater than 0, decrement high positive index
-                } else if(array[posHigh] + array[posLow] + array[neg] > 0){
+                } else if(outputArray[posHigh] + outputArray[posLow] + outputArray[neg] > 0){
                     posHigh--;
                 //If total is less than 0, increment low positive index
                 } else {
@@ -65,7 +147,7 @@ public class Main {
             negLow = midIndex - 1;
             negHigh = lowChecked;
             //Looping "up" through negative elements to find largest negative element larger than current negative
-            while(array[negHigh] + array[pos] < 0){
+            while(negHigh < midIndex-1 && outputArray[negHigh] + outputArray[pos] < 0){
                 negHigh++;
             }
 
@@ -76,9 +158,9 @@ public class Main {
             //Finding matching elements by looping down and up through positive elements
             while(negHigh < negLow){
                 //If total equals 0, return
-                if(array[negHigh] + array[negLow] + array[pos] == 0 && array[negHigh] != array[negLow]){
+                if(outputArray[negHigh] + outputArray[negLow] + outputArray[pos] == 0){
                     return true;
-                } else if(array[negHigh] + array[negLow] + array[pos] < 0) {
+                } else if(outputArray[negHigh] + outputArray[negLow] + outputArray[pos] < 0) {
                     negHigh++;
                 } else{
                     negLow--;
@@ -125,10 +207,12 @@ public class Main {
     //Used my own binary search (above)
     public static boolean fasterThreeSum(int[] array, int arrayLength) {
         Arrays.sort(array);
+        int searchResult;
         //Working up the list, comparing two elements and searching to find the third
         for(int x = 0; x < arrayLength; x++){
             for(int y = x+1; y < arrayLength; y++){
-                if(BinarySearch(array, -(array[x]+array[y])) != -1){
+                searchResult = BinarySearch(array, -(array[x] + array[y]));
+                if(searchResult != -1 && searchResult != x && searchResult != y){
                     return true;
                 }
             }
@@ -175,17 +259,17 @@ public class Main {
                 myResult = myThreeSum(testArray, N);
                 fasterResult = fasterThreeSum(testArray, N);
                 fastestResult = fastestThreeSum(testArray, N);
+                if(N < 100){
+                    for(int x = 0; x < N; x++){
+                        System.out.printf("%d ", testArray[x]);
+                    }
+                    System.out.printf("\n");
+                }
                 if (bruteResult != myResult || bruteResult != fasterResult || bruteResult != fastestResult){
                     System.out.printf("Three sum results don't match for array of size %d\n ", N);
                     return false;
                 }
                 System.out.printf("Results match - all returned %b - tests passed!\n", fasterResult);
-            if(N < 100){
-                for(int x = 0; x < N; x++){
-                    System.out.printf("%d ", testArray[x]);
-                }
-                System.out.printf("\n");
-            }
         }
         return true;
     }
@@ -198,32 +282,38 @@ public class Main {
 
     public static void runTimeTests() {
         int[] testArray = new int[1];
-        long beforeTime, afterTime, totalTime;
+        long beforeTime, afterTime, totalTime, averageTime;
         long brutePrevTime = 1;
         long myPrevTime = 1;
         long fasterPrevTime = 1;
         long fastestPrevTime = 1;
 
-        System.out.printf("%31s %47s %47s\n", "Brute 3sum", "Faster 3sum", "Fastest 3sum");
-        System.out.printf("%15s %15s %15s %15s %15s %15s %15s %15s %15s %15s\n",
-                "N", "Time", "Doubling", "Expected", "Time", "Doubling", "Expected", "Time", "Doubling", "Expected");
-        System.out.printf("%47s %15s %31s %15s %31s %15s\n", "Ratios", "Doubling", "Ratios", "Doubling", "Ratios", "Doubling");
-        System.out.printf("%63s %47s %47s\n", "Ratios", "Ratios", "Ratios");
+        System.out.printf("%31s %47s %47s %47s\n", "Brute 3sum", "Faster 3sum", "Fastest 3sum", "My 3sum");
+        System.out.printf("%15s %15s %15s %15s %15s %15s %15s %15s %15s %15s %15s %15s %15s\n",
+                "N", "Time", "Doubling", "Expected", "Time", "Doubling", "Expected", "Time", "Doubling", "Expected",
+                "Time", "Doubling", "Expected");
+        System.out.printf("%47s %15s %31s %15s %31s %15s %31s %15s\n", "Ratios", "Doubling", "Ratios", "Doubling",
+                "Ratios", "Doubling", "Ratios", "Doubling");
+        System.out.printf("%63s %47s %47s %47s\n", "Ratios", "Ratios", "Ratios", "Ratios");
         for (int N = 4; N < 1000; N = N * 2) {
             System.out.printf("%16s", N);
-            testArray = generateArray(N, -(N * 2), N * 2);
 
-            beforeTime = getCpuTime();
-            bruteThreeSum(testArray, N);
-            afterTime = getCpuTime();
-            totalTime = afterTime - beforeTime;
-            System.out.printf("%15d ", totalTime);
+            averageTime = 0;
+            for(int x = 0; x < 20; x++) {
+                testArray = generateArray(N, -(N * 2), N * 2);
+                beforeTime = getCpuTime();
+                bruteThreeSum(testArray, N);
+                afterTime = getCpuTime();
+                averageTime = averageTime + afterTime - beforeTime;
+            }
+            averageTime = averageTime/20;
+            System.out.printf("%15d ", averageTime);
             if(N!= 4){
-                System.out.printf("%15.3f %15d ", (float) totalTime/brutePrevTime, (int)(Math.pow(N, 3)/(Math.pow((N/2), 3))));
+                System.out.printf("%15.3f %15d ", (float) averageTime/brutePrevTime, (int)(Math.pow(N, 3)/(Math.pow((N/2), 3))));
             } else {
                 System.out.printf("%15s %15s ", "na", "na");
             }
-            brutePrevTime = totalTime;
+            brutePrevTime = averageTime;
 
             testArray = generateArray(N, -(N * 2), N * 2);
             beforeTime = getCpuTime();
@@ -271,6 +361,12 @@ public class Main {
 
     public static void main(String[] args) {
         // write your code here
+        int[] array = {-14, -13, -10, -9, 3, 6, 10, 11};
+        int arrayLength = 8;
+        myThreeSum(array, arrayLength);
+        bruteThreeSum(array, arrayLength);
+        fasterThreeSum(array, arrayLength);
+        fastestThreeSum(array, arrayLength);
         if(verificationTests()){
             System.out.printf("Tests passed! \n");
         }
