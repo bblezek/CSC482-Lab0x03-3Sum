@@ -97,19 +97,19 @@ public class Main {
         return sortedArray;
     }
 
-    public static boolean myThreeSum(int[] array, int arrayLength) {
-        int[] outputArray = mergeSort(array, 0, arrayLength);
-        int modifiedLength = outputArray.length;
+    public static boolean myThreeSum(int[] arrayToSort, int arrayLength) {
+        int[] array = mergeSort(arrayToSort, 0, arrayLength);
+        int newLength = array.length;
         int midIndex = 0;
         int posLow, posHigh, negLow, negHigh, highChecked, lowChecked;
-        for (int x = 0; x < modifiedLength; x++) {
-            if (outputArray[x] > 0) {
+        for (int x = 0; x < newLength; x++) {
+            if (array[x] > 0) {
                 midIndex = x;
                 break;
             }
         }
 
-        highChecked = modifiedLength - 1;
+        highChecked = newLength - 1;
         //Looking for a one negative number and two positive solution
         //Taking lowest negative first
         for (int neg = 0; neg < midIndex; neg++) {
@@ -117,7 +117,7 @@ public class Main {
             posLow = midIndex;
             posHigh = highChecked;
             //Looping down from highest element to find highest element smaller than current negative
-            while(posHigh > midIndex && outputArray[posHigh] + outputArray[neg] > 0){
+            while(posHigh > midIndex+1 && array[posHigh] + array[neg] > 0){
                 posHigh--;
             }
 
@@ -128,10 +128,10 @@ public class Main {
             //Finding matching elements by looping down and up through positive elements
             while(posHigh > posLow) {
                 //If total equals 0, return
-                if(outputArray[posHigh] + outputArray[posLow] + outputArray[neg] == 0){
+                if(array[posHigh] + array[posLow] + array[neg] == 0){
                     return true;
                 //If total is greater than 0, decrement high positive index
-                } else if(outputArray[posHigh] + outputArray[posLow] + outputArray[neg] > 0){
+                } else if(array[posHigh] + array[posLow] + array[neg] > 0){
                     posHigh--;
                 //If total is less than 0, increment low positive index
                 } else {
@@ -143,11 +143,11 @@ public class Main {
         lowChecked = 0;
 
         //Doing same thing for one positive and two negative number solution
-        for (int pos = midIndex; pos < arrayLength; pos++) {
+        for (int pos = midIndex; pos < newLength; pos++) {
             negLow = midIndex - 1;
             negHigh = lowChecked;
             //Looping "up" through negative elements to find largest negative element larger than current negative
-            while(negHigh < midIndex-1 && outputArray[negHigh] + outputArray[pos] < 0){
+            while(negHigh < midIndex-2 && array[negHigh] + array[pos] < 0){
                 negHigh++;
             }
 
@@ -158,9 +158,9 @@ public class Main {
             //Finding matching elements by looping down and up through positive elements
             while(negHigh < negLow){
                 //If total equals 0, return
-                if(outputArray[negHigh] + outputArray[negLow] + outputArray[pos] == 0){
+                if(array[negHigh] + array[negLow] + array[pos] == 0){
                     return true;
-                } else if(outputArray[negHigh] + outputArray[negLow] + outputArray[pos] < 0) {
+                } else if(array[negHigh] + array[negLow] + array[pos] < 0) {
                     negHigh++;
                 } else{
                     negLow--;
@@ -205,12 +205,13 @@ public class Main {
 
     //Heavily based on book example on page 190
     //Used my own binary search (above)
-    public static boolean fasterThreeSum(int[] array, int arrayLength) {
-        Arrays.sort(array);
+    public static boolean fasterThreeSum(int[] arrayToSort, int arrayLength) {
+        int[] array = mergeSort(arrayToSort, 0, arrayLength);
+        int newLength = array.length;
         int searchResult;
         //Working up the list, comparing two elements and searching to find the third
-        for(int x = 0; x < arrayLength; x++){
-            for(int y = x+1; y < arrayLength; y++){
+        for(int x = 0; x < newLength; x++){
+            for(int y = x+1; y < newLength; y++){
                 searchResult = BinarySearch(array, -(array[x] + array[y]));
                 if(searchResult != -1 && searchResult != x && searchResult != y){
                     return true;
@@ -221,12 +222,13 @@ public class Main {
     }
 
     //Fastest three sum
-    public static boolean fastestThreeSum(int[] array, int arrayLength) {
-        Arrays.sort(array);
+    public static boolean fastestThreeSum(int[] arrayToSort, int arrayLength) {
+        int[] array = mergeSort(arrayToSort, 0, arrayLength);
+        int newLength = array.length;
         int low, high;
-        for(int x = 0; x < arrayLength-2; x++){
+        for(int x = 0; x < newLength-2; x++){
             low = x+1;
-            high = arrayLength-1;
+            high = newLength-1;
             while(low < high){
                 //If elements sum to 0 and are unique
                 if(array[x] + array[low] + array[high] == 0 && array[x] != array[low] && array[low] != array[high]){
@@ -361,7 +363,7 @@ public class Main {
 
     public static void main(String[] args) {
         // write your code here
-        int[] array = {-14, -13, -10, -9, 3, 6, 10, 11};
+        int[] array = {6, 14, -13, -2, 9, 8, 15, -7};
         int arrayLength = 8;
         myThreeSum(array, arrayLength);
         bruteThreeSum(array, arrayLength);
