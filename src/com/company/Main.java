@@ -154,7 +154,7 @@ public class Main {
         lowChecked = 0;
 
         //Doing same thing for one positive and two negative number solution
-        for (int pos = midIndex; pos < newLength; pos++) {
+        for (int pos = newLength - 1; pos > midIndex - 1; pos--) {
             negLow = midIndex - 1;
             negHigh = lowChecked;
             //Looping "up" through negative elements to find largest negative element larger than current negative
@@ -183,11 +183,13 @@ public class Main {
         return tripletList;
     }
 
-    public static ArrayList<Integer[]> bruteThreeSum(int[] array, int arrayLength) {
+    public static ArrayList<Integer[]> bruteThreeSum(int[] arrayToSort, int arrayLength) {
+        int[] array = mergeSort(arrayToSort, 0, arrayLength);
+        int newLength = array.length;
         ArrayList<Integer[]> tripletList = new ArrayList<>();
-        for (int i = 0; i < arrayLength - 2; i++) {
-            for (int j = i + 1; j < arrayLength - 1; j++) {
-                for (int k = j + 1; k < arrayLength; k++) {
+        for (int i = 0; i < newLength - 2; i++) {
+            for (int j = i + 1; j < newLength - 1; j++) {
+                for (int k = j + 1; k < newLength; k++) {
                     if ((array[i] + array[j] + array[k]) == 0 && array[i] != array[j] && array[j] != array[k] && array[i] != array[k]) {
                         tripletList.add(new Integer[]{array[i], array[j], array[k]});
                     }
@@ -273,7 +275,7 @@ public class Main {
         ArrayList<Integer[]> bruteResult, myResult, fasterResult, fastestResult;
         for (int N = 4; N < 10000; N = N * 2) {
             System.out.printf("Testing for array of length %d\n", N);
-            testArray = generateArray(N, -(N * 4), N * 4);
+            testArray = generateArray(N, -(N * 10), N * 10);
             bruteResult = bruteThreeSum(testArray, N);
             myResult = myThreeSum(testArray, N);
             fasterResult = fasterThreeSum(testArray, N);
@@ -297,7 +299,7 @@ public class Main {
                     System.out.printf("Faster triplets: ");
                     for (int x = 0; x < fasterResult.size(); x++) {
                         for (int y = 0; y < 3; y++) {
-                            System.out.printf("%d ", bruteResult.get(x)[y]);
+                            System.out.printf("%d ", fasterResult.get(x)[y]);
                         }
                         System.out.print("\t");
                     }
@@ -306,9 +308,9 @@ public class Main {
 
                 if (fastestResult.size() != 0) {
                     System.out.printf("Fastest triplets: ");
-                    for (int x = 0; x < bruteResult.size(); x++) {
+                    for (int x = 0; x < fastestResult.size(); x++) {
                         for (int y = 0; y < 3; y++) {
-                            System.out.printf("%d ", bruteResult.get(x)[y]);
+                            System.out.printf("%d ", fastestResult.get(x)[y]);
                         }
                         System.out.print("\t");
                     }
@@ -317,21 +319,26 @@ public class Main {
 
                 if (myResult.size() != 0) {
                     System.out.printf("My triplets: ");
-                    for (int x = 0; x < bruteResult.size(); x++) {
+                    for (int x = 0; x < myResult.size(); x++) {
                         for (int y = 0; y < 3; y++) {
-                            System.out.printf("%d ", bruteResult.get(x)[y]);
+                            System.out.printf("%d ", myResult.get(x)[y]);
                         }
                         System.out.print("\t");
                     }
                     System.out.println();
                 }
             }
-            if (fasterResult.size() != myResult.size() && fasterResult.size() != fastestResult.size()) {
+            if (bruteResult.size() == fasterResult.size() && fasterResult.size() == myResult.size() && fasterResult.size() == fastestResult.size()) {
+                System.out.printf("Results match - all returned %d triplets - " +
+                        "tests passed!\n", bruteResult.size());
+                bruteResult.removeAll(bruteResult);
+                myResult.removeAll(myResult);
+                fasterResult.removeAll(fasterResult);
+                fastestResult.removeAll(fastestResult);
+            } else {
                 System.out.printf("Three sum results don't match for array of size %d\n ", N);
                 return false;
             }
-            System.out.printf("Results match - brute force returned %d triplets and rest returned %d triplets - " +
-                    "tests passed!\n", bruteResult.size(), fasterResult.size());
         }
         return true;
     }
@@ -349,7 +356,7 @@ public class Main {
         long myPrevTime = 1;
         long fasterPrevTime = 1;
         long fastestPrevTime = 1;
-
+        int range;
         System.out.printf("%31s %47s %47s %47s\n", "Brute 3sum", "Faster 3sum", "Fastest 3sum", "My 3sum");
         System.out.printf("%15s %15s %15s %15s %15s %15s %15s %15s %15s %15s %15s %15s %15s\n",
                 "N", "Time", "Doubling", "Expected", "Time", "Doubling", "Expected", "Time", "Doubling", "Expected",
@@ -357,23 +364,31 @@ public class Main {
         System.out.printf("%47s %15s %31s %15s %31s %15s %31s %15s\n", "Ratios", "Doubling", "Ratios", "Doubling",
                 "Ratios", "Doubling", "Ratios", "Doubling");
         System.out.printf("%63s %47s %47s %47s\n", "Ratios", "Ratios", "Ratios", "Ratios");
-        for (int N = 4; N < 1000; N = N * 2) {
+        for (int N = 4; N < 1000000; N = N * 2) {
             System.out.printf("%16s", N);
-            testArray = generateArray(N, -(N * 2), N * 2);
-            beforeTime = getCpuTime();
-            bruteThreeSum(testArray, N);
-            afterTime = getCpuTime();
-            totalTime = afterTime - beforeTime;
-
-            System.out.printf("%15d ", totalTime);
-            if (N != 4) {
-                System.out.printf("%15.3f %15d ", (float) totalTime / brutePrevTime, (int) (Math.pow(N, 3) / (Math.pow((N / 2), 3))));
+            if (N * 10 > Integer.MAX_VALUE) {
+                range = Integer.MAX_VALUE;
             } else {
-                System.out.printf("%15s %15s ", "na", "na");
+                range = N * 10;
             }
-            brutePrevTime = totalTime;
+            if (N < 10000) {
+                testArray = generateArray(N, -(range), range);
+                beforeTime = getCpuTime();
+                bruteThreeSum(testArray, N);
+                afterTime = getCpuTime();
+                totalTime = afterTime - beforeTime;
+                System.out.printf("%15d ", totalTime);
+                if (N != 4) {
+                    System.out.printf("%15.3f %15d ", (float) totalTime / brutePrevTime, (int) (Math.pow(N, 3) / (Math.pow((N / 2), 3))));
+                } else {
+                    System.out.printf("%15s %15s ", "na", "na");
+                }
+                brutePrevTime = totalTime;
+            } else {
+                System.out.printf("%15s %15s %15s ", "na", "na", "na");
+            }
 
-            testArray = generateArray(N, -(N * 2), N * 2);
+            testArray = generateArray(N, -(range), range);
             beforeTime = getCpuTime();
             fasterThreeSum(testArray, N);
             afterTime = getCpuTime();
@@ -387,7 +402,7 @@ public class Main {
             }
             fasterPrevTime = totalTime;
 
-            testArray = generateArray(N, -(N * 2), N * 2);
+            testArray = generateArray(N, -(range), range);
             beforeTime = getCpuTime();
             fastestThreeSum(testArray, N);
             afterTime = getCpuTime();
@@ -400,7 +415,7 @@ public class Main {
             }
             fastestPrevTime = totalTime;
 
-            testArray = generateArray(N, -(N * 2), N * 2);
+            testArray = generateArray(N, -(range), range);
             beforeTime = getCpuTime();
             myThreeSum(testArray, N);
             afterTime = getCpuTime();
@@ -419,9 +434,14 @@ public class Main {
 
     public static void main(String[] args) {
         // write your code here
+        int[] array = {-275, 288, 131, -1, -159, -188, -2, -91, -170, 268, -110, 34, -82, -112, -38, -101, 224, 219, 259,
+                -7, -140, 243, 264, 4, 266, -251, -235, 282, 19, -78, 269, -245};
+        ArrayList<Integer[]> resultList = myThreeSum(array, array.length);
         if (verificationTests()) {
             System.out.printf("Tests passed! \n");
+            runTimeTests();
+        } else {
+            System.out.printf("Tests failed! \n");
         }
-        runTimeTests();
     }
 }
