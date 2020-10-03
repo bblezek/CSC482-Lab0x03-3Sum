@@ -267,6 +267,9 @@ public class Main {
     }
 
     //Fastest three sum
+    //Heavily based on wikipedia article: https://en.wikipedia.org/wiki/3SUM
+    //and this article: https://www.geeksforgeeks.org/find-a-triplet-that-sum-to-a-given-value/
+    //Returns a list of triplets
     public static ArrayList<Integer[]> fastestThreeSum(int[] arrayToSort, int arrayLength) {
         int[] array = mergeSort(arrayToSort, 0, arrayLength);
         int newLength = array.length;
